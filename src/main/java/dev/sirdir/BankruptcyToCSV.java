@@ -9,16 +9,20 @@ import org.jsoup.select.Elements;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class BankruptcyToCSV {
 
     final String appendPagination = "&page=";
     final String baseUrl = "https://www.nwaonline.com/";
+    final DateTimeFormatter dtf = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG);
 
     public static void main(String[] args) throws IOException {
         BankruptcyToCSV parsing = new BankruptcyToCSV();
         //no point in using more than 10 pagination because after data visible only with subscription
-        int iterations = (args.length == 1 || args.length >= 10)
+        int iterations = (args.length == 1 && Integer.parseInt(args[0]) >= 10)
                 ? Integer.parseInt(args[0])
                 : 10;
         parsing.doStuff(iterations);
@@ -30,8 +34,7 @@ public class BankruptcyToCSV {
             for (int i = 1; i <= iterations; i++) {
                 String searchRelativeUrl = "/search/?query=bankruptcy+watch";
                 String initialUrl = createUrl(baseUrl, searchRelativeUrl, appendPagination, String.valueOf(i));
-//        RestAssured
-//            String pageHtml = get(initialUrl).asString();
+
                 Document doc = Jsoup.connect(initialUrl).get();
                 Elements links = doc.select(".recommended__article-title > a");
                 for (Element link : links) {
@@ -42,12 +45,15 @@ public class BankruptcyToCSV {
                     String href = attr.get("href");
                     String articleUrl = createUrl(baseUrl, href);
                     Document doc2 = Jsoup.connect(articleUrl).get();
-                    String date = doc2.selectFirst(".most-recent-article-bi-line").text();
+                    String dateStr = doc2.selectFirst(".most-recent-article-bi-line").text();
+                    //just cant parse full string because of "a.m." or "p.m." have dots
+                    //March 22, 2020 at 1:52 a.m.
+                    LocalDate date = LocalDate.parse(dateStr.split(" at")[0], dtf);
                     Elements bankruptRows = doc2.select("[itemprop='articleBody'] > p");
                     int all = bankruptRows.size();
                     long c7 = bankruptRows.parallelStream().filter(el -> el.text().contains("Chapter 7")).count();
                     long c13 = bankruptRows.parallelStream().filter(el -> el.text().contains("Chapter 13")).count();
-                    csvWriter.writeNext(new String[]{date, String.valueOf(all), String.valueOf(c7), String.valueOf(c13)});
+                    csvWriter.writeNext(new String[]{date.toString(), String.valueOf(all), String.valueOf(c7), String.valueOf(c13)});
                 }
             }
         }
