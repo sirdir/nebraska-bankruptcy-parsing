@@ -68,7 +68,13 @@ public class BankruptcyToCSV {
             String dateStr = article.selectFirst(".most-recent-article-bi-line").text();
             //just cant parse full string because of "a.m." or "p.m." have dots
             //March 22, 2020 at 1:52 a.m.
-            LocalDate date = LocalDate.parse(dateStr.split(" at")[0], dtf);
+            LocalDate date;
+            if (dateStr.startsWith("Today")) {
+                date = LocalDate.now();
+            }
+            else {
+                date = LocalDate.parse(dateStr.split(" at")[0], dtf);
+            }
             Elements bankruptRows = article.select("[itemprop='articleBody'] > p");
             int all = bankruptRows.size();
             long c7 = bankruptRows.parallelStream().filter(el -> el.text().contains("Chapter 7")).count();
