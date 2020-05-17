@@ -6,4 +6,4 @@ bankruptcy for nebraska
 
 in root directory will be .csv file with results
 
-https://docs.google.com/spreadsheets/d/1h0RcSJ6tRJMC-eiQUgB6rJqTRz9fVV1jqzMmdYxWQ64/edit?usp=sharing
+https://docs.google.com/spreadsheets/d/1Dh2wQuHa0xHMT69AwhXeeQOudyacQQL6LJ8_tcIdU9A/edit?usp=sharing
